@@ -44,8 +44,15 @@ $result = $conn->query($qry);       // Execute the SQL and get the result
 //     echo "</div>";  // End of a row
 // }
 
+$row_num = 1;
 while($row = $result->fetch_array()) {
-    echo "<div class='row' style='padding: 5px; margin: 15px 0px;'>";  // Start a new row
+    if ($row_num == $result->num_rows) { // Checks if its last row
+        // If last row, increase padding for bottom
+        echo "<div class='row' style='padding: 5px 0px 50px 0px; margin: 15px 0px 0px 0px;'>";  // Start a new row
+    }
+    else {
+        echo "<div class='row' style='padding: 5px; margin: 15px 0px;'>";  // Start a new row
+    }
 
     // Left column - display the category's image
     $img = "./Images/category/$row[CatImage]";
@@ -62,6 +69,7 @@ while($row = $result->fetch_array()) {
     echo "</div>";
 
     echo "</div>";  // End of a row
+    $row_num += 1;
 }
 ?>
 
