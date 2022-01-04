@@ -26,3 +26,16 @@ button[type="submit"] {
 .bg-custom {
   background-color: #fec0cc;
 }
+
+div.catproduct-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 767px) {
+  div.catproduct-img {
+    display: block;
+    margin-bottom: 15px;
+  }
+}

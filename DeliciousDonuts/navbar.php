@@ -18,7 +18,7 @@ $content2 = "<li class='nav-item'>
 			 <li class='nav-item'>
 		     <a class='nav-link' href='login.php'>Login</a></li>
              <li class='nav-item'>
-             <a class='nav-link' href='shoppingCart.php'><img src='Images/shopping-cart.png' alt='Cart' class='img-fluid' style='width: 25px;'/></a></li>";
+             <a class='nav-link' href='shoppingCart.php'><img #cart-icon src='Images/shopping-cart.png' onmouseover='hover(this);' onmouseout='unhover(this);' alt='Cart' class='img-fluid' style='width: 25px;'/></a></li>";
 
 // if(isset($_SESSION["ShopperName"])) { 
 //     //Display a greeting message, Change Password and logout links 
@@ -63,9 +63,6 @@ $content2 = "<li class='nav-item'>
             <li class="nav-item">
                 <a class="nav-link" href="search.php">Product Search</a>
             </li>
-            <!-- <li class="nav-item">
-                <a class="nav-link" href="shoppingCart.php">Shopping Cart</a>
-            </li> -->
         </ul>
         <!-- Right-justified menu items -->
         <ul class="navbar-nav ml-auto">
@@ -73,3 +70,13 @@ $content2 = "<li class='nav-item'>
         </ul>
     </div>
 </nav>
+
+<script>
+    function hover(element) {
+        element.setAttribute('src', 'Images/shopping-cart-hover.png');
+    }
+
+    function unhover(element) {
+        element.setAttribute('src', 'Images/shopping-cart.png');
+    }
+</script>
