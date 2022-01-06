@@ -7,7 +7,7 @@ include("header.php"); // Include the Page Layout header
 <div style="width:80%; max-width: 900px; background-color: white; margin:auto;">
 <!-- Display Page Header -->
 <div class="row" style="padding:5px; margin: 0px;"> <!-- Start of header row -->
-    <div class="col-12">
+    <div class="col-12 productcat-title">
         <span class="page-title">Product Categories</span>
         <p>Select a category listed below:</p>
     </div>
@@ -17,32 +17,8 @@ include("header.php"); // Include the Page Layout header
 include_once("mysql_conn.php");
 
 // To Do:  Starting ....
-$qry = "SELECT * FROM Category";    // Form SQL to select all categories
-$result = $conn->query($qry);       // Execute the SQL and get the result
-
-// Display each category in a row
-// while($row = $result->fetch_array()) {
-//     echo "<div class='row' style='padding: 5px'>";  // Start a new row
-
-//     // Left column - display a text link showing the category's name,
-//     //               display category's description in a new paragraph
-//     $catname = urlencode($row["CatName"]);
-//     $img = "./Images/category/$row[CatImage]";
-//     $catproduct = "catProduct.php?cid=$row[CategoryID]&catName=$catname";
-//     echo "<div class='col-12'>"; // 67% of row width
-//     echo "<a style='display: block;' href=$catproduct><img src='$img' /></a>";
-//     // echo "<p><a href=$catproduct>$row[CatName]</a></p>";
-//     echo "$row[CatDesc]";
-//     echo "</div>";
-
-//     // // Right column - display the category's image
-//     // $img = "./Images/category/$row[CatImage]";
-//     // echo "<div class='col-4'>"; // 33% of row width
-//     // echo "<img src='$img' />";
-//     // echo "</div>";
-
-//     echo "</div>";  // End of a row
-// }
+$qry = "SELECT * FROM Category ORDER BY CatName"; // Form SQL to select all categories
+$result = $conn->query($qry); // Execute the SQL and get the result
 
 $row_num = 1;
 while($row = $result->fetch_array()) {
@@ -54,7 +30,7 @@ while($row = $result->fetch_array()) {
         echo "<div class='row' style='padding: 5px; margin: 15px 0px;'>";  // Start a new row
     }
 
-    // Left column - display the category's image
+    // Left column - display the category's image that links to the product listing page
     $img = "./Images/category/$row[CatImage]";
     $catname = urlencode($row["CatName"]);
     $catproduct = "catProduct.php?cid=$row[CategoryID]&catName=$catname";
@@ -62,18 +38,17 @@ while($row = $result->fetch_array()) {
     echo "<a href=$catproduct><img src='$img' /></a>";
     echo "</div>";
 
-    // Right column - display a text link showing the category's name,
-    //               display category's description in a new paragraph
+    // Right column - display category's description in a new paragraph
     echo "<div class='col-md-8'>"; // 67% of row width
     echo "$row[CatDesc]";
     echo "</div>";
-
     echo "</div>";  // End of a row
     $row_num += 1;
 }
 ?>
 
 <!-- To Do:  Ending .... -->
+</div>
 </div>
 </div>
 <?php
