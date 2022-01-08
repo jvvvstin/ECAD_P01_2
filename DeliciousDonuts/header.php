@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="css/bootstrap.min.css">
 <!-- jQuery library -->
 <script src="js/jquery-3.3.1.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 <!-- Latest compiled JavaScipt -->
 <script src="js/bootstrap.min.js"></script>
 <!-- Site specific Cascading Stylesheet -->

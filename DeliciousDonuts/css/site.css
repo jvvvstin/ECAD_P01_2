@@ -66,6 +66,10 @@ button[disabled="disabled"] {
   opacity: 50%;
 }
 
+label#searchLabel {
+  text-align: right;
+}
+
 p.productTitle {
   text-align: center;
 }
@@ -84,9 +88,19 @@ div.product-container-inner:hover {
   cursor: pointer;
 }
 
+img.productImg {
+  width: 150px;
+}
+
 @media (max-width: 840px) {
   img.product-img {
     width: 190px;
+  }
+}
+
+@media (max-width: 790px) {
+  img.productImg {
+    width: 100px;
   }
 }
 
@@ -95,6 +109,12 @@ div.product-container-inner:hover {
   div.catproduct-img {
     display: block;
     margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 575px) {
+  label#searchLabel {
+    text-align: left;
   }
 }
 
