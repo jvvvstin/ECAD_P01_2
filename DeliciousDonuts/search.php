@@ -220,7 +220,6 @@ if (isset($_POST["hidden_minimum_price"]) || isset($_POST["hidden_maximum_price"
     }
     else {
         echo "<p style='font-weight: bold; font-size: 120%; color: red; margin-left: 20px;'>No results found!</p>";
-        echo "</div>";
     }
     unset($_POST["hidden_minimum_price"]);
     unset($_POST["hidden_maximum_price"]);
