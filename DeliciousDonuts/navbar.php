@@ -38,7 +38,7 @@ $content2 = "<li class='nav-item'>
 // }
 ?>
 <!-- Display a navbar which is visible before or after collapsing -->
-<nav class="navbar navbar-expand-md navbar-dark bg-custom">
+<nav class="navbar navbar-expand-md navbar-dark bg-custom" style="box-shadow: none;">
     <!-- Dynamic Text Display -->
     <span class="navbar-text ml-md-2"
         style="color: #F7Be81; max-width: 80%;">
@@ -51,8 +51,32 @@ $content2 = "<li class='nav-item'>
     </button>
 </nav>
 
+<?php 
+$content3 = "<div style='background-color:#fec0cc; padding-left: 24px;'>Welcome Guest!<br /></div>";
+if(isset($_SESSION["ShopperName"])) { 
+	//To Do 1 (Practical 2) - 
+    //Display a greeting message, Change Password and logout links 
+    //after shopper has logged in.
+    $content3 = "<div style='background-color:#fec0cc; padding-left: 24px;'>Welcome <b>$_SESSION[ShopperName]!</b></div>";
+    $content2 = "<li class='nav-item'>
+                 <a class='nav-link' href='changePassword.php'>Change Password</a></li>
+                 <li class='nav-item'>
+                 <a class='nav-link' href='logout.php'>Logout</a></li>
+                 <li class='nav-item'>
+                <a class='nav-link' href='shoppingCart.php'><img #cart-icon src='Images/shopping-cart.png' onmouseover='hover(this);' onmouseout='unhover(this);' alt='Cart' class='img-fluid' style='width: 25px;'/></a></li>";	
+
+    //Display number of item in cart
+	if (isset($_SESSION["NumCartItem"])) {
+        if ($_SESSION["NumCartItem"] != 0) {
+            // $content1 .= ", $_SESSION[NumCartItem] item(s) in shopping cart";
+        }
+    }
+}
+echo $content3;
+?>
+
 <!-- Define a collapsible navbar -->
-<nav class="navbar navbar-expand-md navbar-light bg-custom">
+<nav class="navbar navbar-expand-md navbar-light bg-custom" style="box-shadow: none;">
     <!-- Collapsible part of navbar -->
     <div class="collapse navbar-collapse" id="collapsibleNavbar">
         <!-- Left-justified menu items -->
