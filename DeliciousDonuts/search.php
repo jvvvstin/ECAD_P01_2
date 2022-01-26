@@ -28,6 +28,10 @@ include("header.php"); // Include the Page Layout header
 <?php 
 include_once("mysql_conn.php");
 
+// Get the current date, without time
+$todaysDate = new DateTime('now');
+$date = $todaysDate->format('Y-m-d');
+
 // Retrieve all products, in alphabetical order
 $qry = "SELECT * FROM Product
         ORDER BY ProductTitle";
@@ -92,12 +96,34 @@ foreach($products as $key => $value) {
     $product = "productDetails.php?pid=$value[ProductID]";
     $productTitle = $value["ProductTitle"];
     $productImg = "./Images/products/$value[ProductImage]";
-    echo"<div class='product-container col-sm-4'>
+    $price = 0;
+    $onOffer = $value["Offered"] == 1 && $date >= $value["OfferStartDate"] && $date <= $value["OfferEndDate"];
+    if ($onOffer) {
+        $price = $value["OfferedPrice"];
+    }
+    else {
+        $price = $value["Price"];
+    }
+    $formattedPrice = number_format($price, 2);
+    if ($value["Quantity"] <= 0) {
+        echo"<div class='product-container col-sm-4'>
                 <div class='product-container-inner' onclick=\"location.href='$product';\" style='margin: 0px 15px'>
-                    <img class=productImg src=$productImg alt='Image of $productTitle' />
+                    <img class='productImg' src=$productImg alt='Image of $productTitle' />
                     <p class='productTitle'>$productTitle</p>
+                    <p class='productTitle'>$$formattedPrice</p>
+                    <p style='color: red; margin: 0px'>Out of Stock!</p>
                 </div>
             </div>";
+    }
+    else {
+        echo"<div class='product-container col-sm-4'>
+                <div class='product-container-inner' onclick=\"location.href='$product';\" style='margin: 0px 15px'>
+                    <img class='productImg' src=$productImg alt='Image of $productTitle' />
+                    <p class='productTitle'>$productTitle</p>
+                    <p class='productTitle'>$$formattedPrice</p>
+                </div>
+            </div>";
+    }
 }
 
 echo "</div>";
@@ -160,12 +186,35 @@ if (isset($_POST["hidden_minimum_price"]) || isset($_POST["hidden_maximum_price"
             $product = "productDetails.php?pid=$row[ProductID]";
             $productTitle = $row["ProductTitle"];
             $productImg = "./Images/products/$row[ProductImage]";
-            echo"<div class='product-container col-sm-4'>
+            $price = 0;
+            $onOffer = $row["Offered"] == 1 && $date >= $row["OfferStartDate"] && $date <= $row["OfferEndDate"];
+            if ($onOffer) {
+                $price = $row["OfferedPrice"];
+            }
+            else {
+                $price = $row["Price"];
+            }
+            $formattedPrice = number_format($price, 2);
+            if ($row["Quantity"] <= 0) {
+                echo"<div class='product-container col-sm-4'>
                      <div class='product-container-inner' onclick=\"location.href='$product';\" style='margin: 0px 15px'>
                          <img class='productImg' src=$productImg alt='Image of $productTitle' />
                          <p class='productTitle'>$productTitle</p>
+                         <p class='productTitle'>$$formattedPrice</p>
+                         <p style='color: red; margin: 0px'>Out of Stock!</p>
                      </div>
                  </div>";
+            }
+            else {
+                echo"<div class='product-container col-sm-4'>
+                     <div class='product-container-inner' onclick=\"location.href='$product';\" style='margin: 0px 15px'>
+                         <img class='productImg' src=$productImg alt='Image of $productTitle' />
+                         <p class='productTitle'>$productTitle</p>
+                         <p class='productTitle'>$$formattedPrice</p>
+                     </div>
+                 </div>";
+            }
+            
         }
         echo "</div>";
     }
