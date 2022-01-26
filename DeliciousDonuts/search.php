@@ -182,6 +182,7 @@ if (isset($_POST["hidden_minimum_price"]) || isset($_POST["hidden_maximum_price"
 
 echo "</div>"; // End of container
 echo "</div>";
+echo "</div>";
 echo "</form>";
 ?>
 
