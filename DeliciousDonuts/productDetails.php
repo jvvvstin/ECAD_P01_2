@@ -103,7 +103,7 @@ if ($result->num_rows > 0) {
             $offerPrice = number_format($row["OfferedPrice"], 2);
 
             // Strike out original price and display the current offered price
-            echo "<p style='margin-top: 14px; display: inline-block;'>Price: <span style='color: red;'><del>S$ $formattedPrice</del></span> <span style='font-weight: bold; color: red;'>
+            echo "<p style='margin-top: 14px; display: inline-block;'>Price: <span style='color: red;'><del>S$ $formattedPrice</del></span> <span style='font-weight: bold; color: red; font-size: 130%;'>
                 S$ $offerPrice</span></p>";
         }
         else {
@@ -134,7 +134,7 @@ echo "<form action='cartFunctions.php' method='post'>";
 echo "<input type='hidden' name='action' value='add' />";
 echo "<input type='hidden' name='product_id' value='$pid' />";
 echo "Quantity: <input type='number' name='quantity' value='1'
-                 min='1' max='10' style='width: 40px' required />";
+                 min='1' max='10' style='width: 40px' required $disabled/>";
 echo "<button $disabled type='submit' style='border-radius: 3px; margin-left: 5px; margin-top: 10px;'>Add to Cart</button>";
 echo "</form>";
 echo "</div>";  // End of right column

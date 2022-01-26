@@ -81,7 +81,7 @@ if ($result->num_rows > 0) {
         if ($onOffer) {
             // If product is on offer, strike out the original price and display the current offered price
             $offerPrice = number_format($row["OfferedPrice"], 2);
-            echo "<p style='margin-top: 14px; display: inline-block;'>Price: <span style='color: red;'><del>S$ $formattedPrice</del></span> <span style='font-weight: bold; color: red;'>
+            echo "<p style='margin-top: 14px; display: inline-block;'>Price: <span style='color: red;'><del>S$ $formattedPrice</del></span> <span style='font-weight: bold; color: red; font-size: 130%;'>
                 S$ $offerPrice</span></p>";
         }
         else {

@@ -83,12 +83,13 @@ if (mysqli_num_rows($result) > 0) {
             $product = "productDetails.php?pid=$row[ProductID]";
             $productTitle = $row["ProductTitle"];
             $productImg = "./Images/products/$row[ProductImage]";
+            $formattedOriPrice = number_format($row["Price"], 2);
             $formattedPrice = number_format($row["OfferedPrice"], 2);
             echo"<div class='product-container col-sm-4' style='display: flex; justify-content: center; margin-bottom: 25px;'>
                      <div class='product-container-inner' onclick=\"location.href='$product';\" style='margin: 0px 15px; background-color: #fec0cc; border-radius: 15px; width: 275px;'>
                          <img style='width: 80%; margin-top: 25px; border-radius: 15px;' src=$productImg alt='Image of $productTitle' />
                          <p class='productTitle' style='font-weight: bold; margin: 15px 0px 0px 0px;'>$productTitle</p>
-                         <p>$$formattedPrice</p>
+                         <p style='margin: 0px;'><del>$$formattedOriPrice</del></p><p style='color: red; font-size: 150%;'>$$formattedPrice</p>
                      </div>
                  </div>";
         }
