@@ -40,36 +40,36 @@ function addItem() {
   }
     // If the ProductID exists in the shopping cart, 
     // update the quantity, else add the item to the Shopping Cart.
-  $pid = $_POST["product_id"];
-  $quantity = $_POST["quantity"];
-  $qry = "SELECT * FROM ShopCartItem WHERE ShopCartID = ? AND ProductID = ?";
-  $stmt = $conn->prepare($qry);
-  $stmt->bind_param("ii", $_SESSION["Cart"], $pid);  // "i" - integer
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $stmt->close();
-  $addNewItem = 0;
-  if ($result->num_rows > 0) { // Selected product exists in shopping cart
-    // increase the quantity of purchase
-	echo "<script>console.log('abc')</script>";
-    $qry = "UPDATE ShopCartItem SET Quantity = LEAST(Quantity+?, 10)
-        WHERE ShopCartID = ? AND ProductID = ?";
-    $stmt = $conn->prepare($qry);
-    $stmt->bind_param("iii", $quantity, $_SESSION["Cart"], $pid);
-    $stmt->execute();
-    $stmt->close();
-  }
-  else { // Selected product has yet to be added to shopping cart
-	echo "<script>console.log('def')</script>";
-    $qry = "INSERT INTO ShopCartItem(ShopCartID, ProductID, Price, Name, Quantity)
-        SELECT ?, ?, Price, ProductTitle, ? FROM Product WHERE ProductID = ?";
-    $stmt = $conn->prepare($qry);
-    $stmt->bind_param("iiii", $_SESSION["Cart"], $pid, $quantity, $pid);
-    $stmt->execute();
-    $stmt->close();
-    $addNewItem = 1;
-  }
-    $conn->close();
+      $pid = $_POST["product_id"];
+      $quantity = $_POST["quantity"];
+      $qry = "SELECT * FROM ShopCartItem WHERE ShopCartID = ? AND ProductID = ?";
+      $stmt = $conn->prepare($qry);
+      $stmt->bind_param("ii", $_SESSION["Cart"], $pid);  // "i" - integer
+      $stmt->execute();
+      $result = $stmt->get_result();
+      $stmt->close();
+      $addNewItem = 0;
+      if ($result->num_rows > 0) { // Selected product exists in shopping cart
+        // increase the quantity of purchase
+	    echo "<script>console.log('abc')</script>";
+        $qry = "UPDATE ShopCartItem SET Quantity = LEAST(Quantity+?, 10)
+            WHERE ShopCartID = ? AND ProductID = ?";
+        $stmt = $conn->prepare($qry);
+        $stmt->bind_param("iii", $quantity, $_SESSION["Cart"], $pid);
+        $stmt->execute();
+        $stmt->close();
+      }
+      else { // Selected product has yet to be added to shopping cart
+	    echo "<script>console.log('def')</script>";
+        $qry = "INSERT INTO ShopCartItem(ShopCartID, ProductID, Price, Name, Quantity)
+            SELECT ?, ?, Price, ProductTitle, ? FROM Product WHERE ProductID = ?";
+        $stmt = $conn->prepare($qry);
+        $stmt->bind_param("iiii", $_SESSION["Cart"], $pid, $quantity, $pid);
+        $stmt->execute();
+        $stmt->close();
+        $addNewItem = 1;
+        }
+        $conn->close();
     // Update session variable used for counting number of items in the shopping cart.
   if (isset($_SESSION["NumCartItem"])) {
     $_SESSION["NumCartItem"] = $_SESSION["NumCartItem"] + $addNewItem;
