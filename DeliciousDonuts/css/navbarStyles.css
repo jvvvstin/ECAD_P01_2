@@ -1,5 +1,6 @@
 * {
   font-family: "Open Sans", Arial, Helvetica, sans-serif;
+
 }
 
 div.container {
@@ -51,4 +52,15 @@ button.navbar-toggler {
     display: inline-block;
     vertical-align: middle;
   }
+}
+ul li a.cart .cart-basket {
+    font-size: .8rem;
+    position: absolute;
+    top: -1px;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    color: #fff;
+    background-color: black;
+    border-radius: 50%;
 }

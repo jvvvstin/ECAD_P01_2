@@ -17,8 +17,8 @@ $content2 = "<li class='nav-item'>
 		     <a class='nav-link' href='register.php'>Sign Up</a></li>
 			 <li class='nav-item'>
 		     <a class='nav-link' href='login.php'>Login</a></li>
-             <li class='nav-item'>
-             <a class='nav-link' href='shoppingCart.php'><img #cart-icon src='Images/shopping-cart.png' onmouseover='hover(this);' onmouseout='unhover(this);' alt='Cart' class='img-fluid' style='width: 25px;'/></a></li>";
+             <li class='nav-item'>";
+            
 
 // if(isset($_SESSION["ShopperName"])) { 
 //     //Display a greeting message, Change Password and logout links 
@@ -54,9 +54,12 @@ $content2 = "<li class='nav-item'>
 <?php 
 $content3 = "<div style='background-color:#fec0cc; padding-left: 24px;'>Welcome Guest!<br /></div>";
 if(isset($_SESSION["ShopperName"])) { 
-	//To Do 1 (Practical 2) - 
     //Display a greeting message, Change Password and logout links 
     //after shopper has logged in.
+      //Display number of item in cart
+	if (!isset($_SESSION["NumCartItem"])) {
+        $_SESSION["NumCartItem"] = 0;
+    }
     $content3 = "<div style='background-color:#fec0cc; padding-left: 24px;'>Welcome <b>$_SESSION[ShopperName]!</b></div>";
     $content2 = "<li class='nav-item'>
                  <a class='nav-link' href='giveFeedback.php'>Give Feedback</a></li>
@@ -67,14 +70,14 @@ if(isset($_SESSION["ShopperName"])) {
                  <li class='nav-item'>
                  <a class='nav-link' href='logout.php'>Logout</a></li>
                  <li class='nav-item'>
-                <a class='nav-link' href='shoppingCart.php'><img #cart-icon src='Images/shopping-cart.png' onmouseover='hover(this);' onmouseout='unhover(this);' alt='Cart' class='img-fluid' style='width: 25px;'/></a></li>";	
+                <a class='nav-link cart position-relative' href='shoppingCart.php'><img #cart-icon src='Images/shopping-cart.png' onmouseover='hover(this);' onmouseout='unhover(this);' alt='Cart' class='img-fluid' style='width: 25px;'/>
+                <i class='fas fa fa-shopping-cart fa-lg'></i>
+                  <span class='cart-basket d-flex align-items-center justify-content-center'>
+                    $_SESSION[NumCartItem]
+                </span>
+                </a></li>";	
 
-    //Display number of item in cart
-	if (isset($_SESSION["NumCartItem"])) {
-        if ($_SESSION["NumCartItem"] != 0) {
-            // $content1 .= ", $_SESSION[NumCartItem] item(s) in shopping cart";
-        }
-    }
+  
 }
 echo $content3;
 ?>

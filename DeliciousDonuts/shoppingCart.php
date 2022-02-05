@@ -11,7 +11,7 @@ if (! isset($_SESSION["ShopperID"])) { // Check if user logged in
 	exit;
 }
 
-echo "<div id='myShopCart container' style='width:1100px;margin:auto'>"; // Start of main container
+echo "<div id='myShopCart container' style='width:1200px;margin:auto'>"; // Start of main container
 if (isset($_SESSION["Cart"])) {
 	echo"<center>"	;
 	echo "<p class='page-title' style='font-size:30px;padding:20px;'>Shopping Cart</p>"; 
@@ -44,13 +44,15 @@ if (isset($_SESSION["Cart"])) {
 		$subTotal = 0; // Declare a variable to compute subtotal before tax
 		$totalQuantity = 0; // Declare a variable to compute number of items
 		echo "<tbody>"; // Start of table's body section
+		//header("Location: productDetails.php?pid=$value[ProductID]");
 		while ($row = $result->fetch_array()) {
 			echo "<tr>";
 			$img = "./Images/products/$row[ProductImage]";
 			echo "<td style='width:14%'><input type='image' src=$img title='Product Picture' width='100%' height='100%'/>";
 			echo "</td>";
-			echo "<td style='width:50%'>$row[Name]<br />";
-			echo "Product ID: $row[ProductID]</td>";
+			echo "<td style='width:43%'><b> <a href='./productDetails.php?pid=$row[ProductID]'  style='color:black' >$row[Name]</a></b><br />";
+			echo "<p style=font-size:9.5px>$row[ProductDesc]";
+			echo "<p style=font-size:11px>Product ID: $row[ProductID]</td>";
 			echo "<td>";
 			echo "<form action='cartFunctions.php' method='post'>";
 			echo "<select name='quantity' onChange='this.form.submit()'>";
