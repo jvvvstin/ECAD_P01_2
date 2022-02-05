@@ -19,14 +19,14 @@ $stmt = $conn->prepare($qry);
 $stmt->bind_param("s", $email);
 
 if ($stmt->execute()) { // checks if the SQL statement executed successfully
-	$result = $stmt->bind_result($shopperID, $name, $hashed_pwd); // Execute the SQL and get the returned result
+	$result = $stmt->bind_result($shopperID, $name, $acc_pwd); // Execute the SQL and get the returned result
 	$result = $stmt->fetch();
 	// Verifies that a password matches a hash
-	// if (password_verify($pwd, $hashed_pwd) == true) {
-	if ($pwd == $hashed_pwd) {
+	if (password_verify($pwd,$acc_pwd) == true) {
 		// Save user's info in session variables
 		$_SESSION["ShopperName"] = $name;
 		$_SESSION["ShopperID"] = $shopperID;
+		$_SESSION["ShopperEmail"] = $email;
 
 		// Release the resource allocated for prepared statement
 		$stmt->close();

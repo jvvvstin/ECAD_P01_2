@@ -59,6 +59,10 @@ if(isset($_SESSION["ShopperName"])) {
     //after shopper has logged in.
     $content3 = "<div style='background-color:#fec0cc; padding-left: 24px;'>Welcome <b>$_SESSION[ShopperName]!</b></div>";
     $content2 = "<li class='nav-item'>
+                 <a class='nav-link' href='giveFeedback.php'>Give Feedback</a></li>
+                 <li class='nav-item'>
+                 <a class='nav-link' href='userProfile.php'>Edit Profile</a></li>
+                 <li class='nav-item'>
                  <a class='nav-link' href='changePassword.php'>Change Password</a></li>
                  <li class='nav-item'>
                  <a class='nav-link' href='logout.php'>Logout</a></li>
@@ -86,6 +90,9 @@ echo $content3;
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="search.php">Product Search</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="feedback.php?donut=">Feedback</a>
             </li>
         </ul>
         <!-- Right-justified menu items -->

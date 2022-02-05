@@ -1,0 +1,6 @@
+<?php 
+
+$_EXISTED = true;
+
+
+?>
