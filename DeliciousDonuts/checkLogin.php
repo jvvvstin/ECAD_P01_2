@@ -31,27 +31,27 @@ if ($stmt->execute()) { // checks if the SQL statement executed successfully
 		// Release the resource allocated for prepared statement
 		$stmt->close();
 
-		// $qry = "SELECT sc.ShopCartID, COUNT(sci.ProductID) AS NumItems
-		// 		FROM ShopCart sc LEFT JOIN ShopCartItem sci
-		// 		ON sc.ShopCartID = sci.ShopCartID
-		// 		WHERE sc.ShopperID = ? AND sc.OrderPlaced = ?";
-		// $stmt = $conn->prepare($qry);
-		// $orderPlaced = 0;
-		// $stmt->bind_param("ii", $shopperID, $orderPlaced);
+		$qry = "SELECT sc.ShopCartID, COUNT(sci.ProductID) AS NumItems
+		 		FROM ShopCart sc LEFT JOIN ShopCartItem sci
+		 		ON sc.ShopCartID = sci.ShopCartID
+		 		WHERE sc.ShopperID = ? AND sc.OrderPlaced = ?";
+		$stmt = $conn->prepare($qry);
+		$orderPlaced = 0;
+		$stmt->bind_param("ii", $shopperID, $orderPlaced);
 
-		// if ($stmt->execute()) {
-		// 	$result = $stmt->bind_result($cartID, $numItems);
-		// 	$result = $stmt->fetch();
-		// 	$stmt->close();
+		if ($stmt->execute()) {
+			$result = $stmt->bind_result($cartID, $numItems);
+		 	$result = $stmt->fetch();
+		 	$stmt->close();
 
-		// 	$_SESSION["Cart"] = $cartID;
-		// 	if ($numItems != 0) {
-		// 		$_SESSION["NumCartItem"] = $numItems;
-		// 	}
-		// }
+		 	$_SESSION["Cart"] = $cartID;
+		 	if ($numItems != 0) {
+		 		$_SESSION["NumCartItem"] = $numItems;
+		 	}
+		 }
 
 		// Close database connection
-		// $conn->close();
+		$conn->close();
 
 		// Redirect to home page
 		header("Location: index.php");

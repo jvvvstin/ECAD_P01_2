@@ -4,13 +4,14 @@
 include_once("cartFunctions.php");
 include("header.php"); // Include the Page Layout header
 
+
 if (! isset($_SESSION["ShopperID"])) { // Check if user logged in 
 	// redirect to login page if the session variable shopperid is not set
 	header ("Location: login.php");
 	exit;
 }
 
-echo "<div id='myShopCart container' style='width:1200px;margin:auto'>"; // Start a container
+echo "<div id='myShopCart container' style='width:1100px;margin:auto'>"; // Start of main container
 if (isset($_SESSION["Cart"])) {
 	echo"<center>"	;
 	echo "<p class='page-title' style='font-size:30px;padding:20px;'>Shopping Cart</p>"; 
@@ -25,7 +26,7 @@ if (isset($_SESSION["Cart"])) {
 	
 	if ($result->num_rows > 0) {
 		// the page header and header row of shopping cart page
-		echo "<div style=float:left >"; // Start a container
+		echo "<div style=float:left >"; // Start of shopping cart table container
 		echo "<div class='table-responsive' >"; // Bootstrap responsive table
 		echo "<table class='table table-hover' style='border:0.5px solid lightgray'>"; // Start of table
 		echo "<thead class='cart-header' style='background-color:#fec0cc'>";
@@ -46,7 +47,7 @@ if (isset($_SESSION["Cart"])) {
 		while ($row = $result->fetch_array()) {
 			echo "<tr>";
 			$img = "./Images/products/$row[ProductImage]";
-			echo "<td style='width:10%'><input type='image' src=$img title='Product Picture' width='100%' height='100%'/>";
+			echo "<td style='width:14%'><input type='image' src=$img title='Product Picture' width='100%' height='100%'/>";
 			echo "</td>";
 			echo "<td style='width:50%'>$row[Name]<br />";
 			echo "Product ID: $row[ProductID]</td>";
@@ -91,26 +92,32 @@ if (isset($_SESSION["Cart"])) {
 		echo "</div>"; // End of Bootstrap responsive table
 		echo "</div>"; // End of Bootstrap responsive table
 
-		echo "<div style='float:right;margin-left:5px;width:30%;border:0.5px solid lightgray'>"; // Start a container for checkout
+		echo "<div style='float:right;margin-left:5px;width:25%;border:0.5px solid lightgray'>"; // Start a container for checkout
 		// Display the subtotal & total Quantity at the end of the shopping cart
-	
-		echo "<p style='text-align:left; font-size:25px;padding-top:5px;padding-left:20px'>CART TOTALS";
+		echo "<p style='text-align:left; font-size:25px;padding-top:5px;padding-left:20px;background-color:#fec0cc;color:white'>CART TOTALS";
 		echo "<p style='text-align:left; font-size:15px;padding-left:20px'>
 			  Total Item(s): &nbsp;&nbsp;&nbsp;&nbsp;". $totalQuantity;
 		echo "<p style='text-align:left; font-size:15px;padding-left:20px'>
 			  Subtotal   S$: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".  number_format($subTotal, 2);
 		
 		$_SESSION["SubTotal"] = round($subTotal, 2);	
+		
+		echo "<form method='post' action='checkout.php'>";
 		if ($subTotal > 50)
 		{
 			echo "<p style='text-align:left; font-size:15px;color:red;padding-left:20px'>Normal Delivery Charges waived!";
+			echo"<input  class='form-control' type='hidden'
+                name='waived' id='waived' value='true' />";
 		}
-		// Add PayPal Checkout button on the shopping cart page
-		echo "<form method='post' action='checkout.php'>";
-		
-		echo "<button type='submit' style='float: left;margin-left:20px;margin-bottom:10px; background-color: rgb(0, 132, 255); font-weight: 500; font-size: 18px; height: 50px; padding: 0 30px; border: none; border-radius: 5px; cursor: pointer;'>Proceed to Checkout</button>";
+		else{
+			echo"<input  class='form-control' type='hidden'
+                name='waived' id='waived' value='false' />";
+		}
+		echo "<button type='submit' class='cartbtn' style='color:white;margin-left:1px;margin-bottom:10px;margin-top:10px; background-color: rgb(0, 132, 255); font-weight: 500; font-size: 18px; height: 50px; padding: 0 30px; border: none; border-radius: 5px; cursor: pointer;'>Proceed to Checkout</button>";
+	
+
 		echo "</form></p>";		
-		echo "</div>"; // End of container
+		echo "</div>"; // End of container for checkout
 	}
 	else {
 		echo "<h3 style='text-align:center; color:red;'>Empty shopping cart!</h3>";
@@ -121,6 +128,6 @@ if (isset($_SESSION["Cart"])) {
 else {
 	echo "<h3 style='text-align:center; color:red;'>Empty shopping cart!</h3>";
 }	
-		echo "</div>"; // End of container
+		echo "</div>"; // End of main container
 include("footer.php"); // Include the Page Layout footer
 ?>
