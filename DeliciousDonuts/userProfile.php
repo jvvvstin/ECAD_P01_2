@@ -13,8 +13,6 @@ if (!isset($_SESSION["ShopperID"])) { // Check if user logged in
 	exit;
 }
 
-
-
 $qry = "SELECT Name, BirthDate, Address, Country, Phone, Email FROM Shopper WHERE ShopperID = ?";
 $stmt = $conn->prepare($qry);
 $stmt->bind_param("i", $_SESSION["ShopperID"]);
@@ -379,6 +377,7 @@ function validateForm()
     <div class="form-group row">       
         <div class="col-sm-9 offset-sm-3">
             <button class="btn" type="submit">Update Profile</button>
+            <a style="padding: 4px 8px; border-radius: 4px; background-color: pink; color: black; font-weight: bold; margin-left: 5px;" href='changePassword.php'>Change Password</a>
         </div>
     </div>
 </form>
