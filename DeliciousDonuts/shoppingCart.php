@@ -112,11 +112,15 @@ if (isset($_SESSION["Cart"])) {
                 name='waived' id='waived' value='true' />";
 		}
 		else{
+			
 			echo"<input  class='form-control' type='hidden'
                 name='waived' id='waived' value='false' />";
 		}
 		echo "<button type='submit' class='cartbtn' style='color:white;margin-left:1px;margin-bottom:10px;margin-top:10px; background-color: rgb(0, 132, 255); font-weight: 500; font-size: 18px; height: 50px; padding: 0 30px; border: none; border-radius: 5px; cursor: pointer;'>Proceed to Checkout</button>";
-	
+		if($subTotal > 40 && $subTotal <= 50)
+			{
+				echo "<p style='text-align:left; font-size:15px;color:green;padding-left:20px'>Enjoy free delivery with a min spending of $50!(Normal delivery only)";
+			}
 
 		echo "</form></p>";		
 		echo "</div>"; // End of container for checkout
