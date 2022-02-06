@@ -54,6 +54,7 @@ echo "</select>
     </div>
     <div class='col-sm-3'>
             <button type='submit'>View</button>
+            <a style='background-color: pink; color: black; font-weight: bold; padding: 4px 8px; margin-left: 5px;' href='giveFeedback.php'>Give Feedback</a>
         </div>
 </div>
 </div>
