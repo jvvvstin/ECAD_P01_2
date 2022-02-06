@@ -1,316 +1,168 @@
 <?php
 session_start();
 include("header.php"); // Include the Page Layout header
-include_once("myPayPal.php");
 include_once("mysql_conn.php"); 
 //testing
 //$_SESSION["ShopperID"] = 1;
 //$_SESSION["Cart"] = 1;
 
-if($_POST) //Post Data received from checkout page
+if(isset($_SESSION["Cart"])) //if a cart variable exists
 {
-	//
-	$qty = 0;
-    $qry = "SELECT * FROM shopcartitem WHERE ShopCartID = ?";
-        $stmt = $conn->prepare($qry);
+    // Retrieve shopping cart items from database
+	$qry = "SELECT *, (Price*Quantity) AS Total FROM ShopCartItem WHERE ShopCartID=?";
+	$stmt = $conn->prepare($qry);
+	$stmt->bind_param("i", $_SESSION["Cart"]);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
 
-        $stmt->bind_param("i", $_SESSION["Cart"]);
-        $stmt->execute();
-        $result=$stmt->get_result();
-
-        if($result->num_rows > 0){
-            while($row = $result->fetch_array()){
-                $qry = "SELECT Quantity FROM product WHERE ProductID = ?";
-                $stmt = $conn->prepare($qry);
-                $stmt->bind_param("i", $row["ProductID"]);
-                if ($stmt->execute()){
-                    $stmt->bind_result($qty);
-                    while ($stmt->fetch()) {
-                        $a = array('Quantity' => $qty);
-                    }
-                    $stmt->close();
-                    if ($row["Quantity"] > $qty){
-                        $a = $row["ProductID"];
-                        $b = $row["Name"];
-                        $c = $row["Quantity"];
-                        echo "<div style='text-align: center; padding-top: 5%;'>";
-                        echo "<h3>Product $a : $b is out of stock!</h3><br />";
-                        echo "<h4>Requested Quantity: $c</h4>";
-                        echo "<h4>Please return to shopping cart to amend your purchase.</h4> <br />";
-                        echo "<h4><a href='shoppingCart.php'>Proceed Back to Shopping Cart</a></h4>";
-                        echo "</div>";
-                        include("footer.php");
-                        exit;
-                    }
-
-                }
-    		
-		    }
+    if ($result->num_rows > 0) {
+		// Declare an array to store the shopping cart items in session variable 
+		$_SESSION["Items"] = array();	
+        //compute subtotal
+        $subTotal = 0;
+         echo "<div class='row' style='width: 100%;'>";
+         echo "<div class='col-sm-6' style='padding-left:3%;'>";
+         echo "<table class='form-container' style='float: right; width: 100%; display: flex; justify-content: flex-start; align-items: flex-start; flex-direction: column;'>";
+         echo "<h2 class='form-title' style='padding-top: 13%; font-size: 36px; margin-bottom: 2.5rem; font-weight: 500; opacity: 0.8;'>Your Order</h2>";
+         echo "<tbody style='width:100%'>";
+         echo " <tr>
+         <th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: left; font-size: x-large; width: 72%'>Product Name</th>
+         <th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: left; font-size: x-large;'>Product Total</th>
+         </tr>";
+         while ($row = $result->fetch_array()) {
+            echo "<tr style='line-height: 3;'>";
+             echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: left; font-size: large; font-weight: normal; width: 72%'>$row[Name]&nbsp;<strong>x&nbsp;$row[Quantity]</strong></th>";
+             echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: right; font-size: large; font-weight: normal;'><strong>$$row[Total]</strong></th>";
+             echo "</tr>";
+             $subTotal += $row["Total"];
+             $_SESSION["SubTotal"] = $subTotal;
+         }
     }
 
-    $paypal_data = '';
-    // Get all items from the shopping cart, concatenate to the variable $paypal_data
-    // $_SESSION['Items'] is an associative array
-    foreach($_SESSION['Items'] as $key=>$item) {
-        $paypal_data .= '&L_PAYMENTREQUEST_0_QTY'.$key.'='.urlencode($item["quantity"]);
-        $paypal_data .= '&L_PAYMENTREQUEST_0_AMT'.$key.'='.urlencode($item["price"]);
-        $paypal_data .= '&L_PAYMENTREQUEST_0_NAME'.$key.'='.urlencode($item["name"]);
-        $paypal_data .= '&L_PAYMENTREQUEST_0_NUMBER'.$key.'='.urlencode($item["productId"]);
-    }
-	
-	//Get form data
-    $_SESSION["Tax"] = $_POST["Tax"];
-    $_SESSION["ShipName"] = $_POST["ShipName"];
-    $_SESSION["BillAddress"] = $_POST["BillAddress"];
-    $_SESSION["BillCountry"] = "Singapore";
-    $_SESSION["ShipPhone"] = $_POST["ShipPhone"];
-    $_SESSION["ShipEmail"] = $_POST["ShipEmail"];
-    $deliveryMode = $_POST["delivery"];
-    $_SESSION["ShipCharge"] = $_POST["delivery"];
-    $_SESSION["Message"] = $_POST["Message"];
-    //$_SESSION["FinalTotal"] = substr($_POST["finalTotal"],1);
-    $_SESSION["BillPhone"] = $_POST["BillPhone"];
-    $_SESSION["BillEmail"] = $_POST["BillEmail"];
+    $total = 0;
+    $final = 0;
+    $delivery = 2;
+    $tax = 0;
+    // Retrieve gst details from database
+    $qry2 = "SELECT * FROM gst WHERE EffectiveDate < curdate()
+            ORDER BY EffectiveDate DESC LIMIT 1";
+    $stmt = $conn->prepare($qry2);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $waived = NULL;
 
-    $hour = Date("H");
-    //get delivery date & timeslot
-    if ($deliveryMode == "5"){
-        $_SESSION["DeliveryMode"] = "Express";
-        if($hour < 10){
-            $_SESSION["DeliveryTime"] = "9am - 12noon";
-            $_SESSION["DeliveryDate"] = date("Y-m-d");
-        }
-
-        else if ($hour >= 10 && $hour < 13){
-            $_SESSION["DeliveryTime"] = "12noon - 3pm";
-            $_SESSION["DeliveryDate"] = date("Y-m-d");
-        }
-
-        else if ($hour >= 13 && $hour < 16){
-            $_SESSION["DeliveryTime"] = "3pm - 6pm";
-            $_SESSION["DeliveryDate"] = date("Y-m-d");
-        }
-
-        else{
-            $_SESSION["DeliveryTime"] = "9am - 12noon";
-            $_SESSION["DeliveryDate"] = date("Y-m-d", strtotime("+1 day"));
-        }
+    if (isset($_POST["waived"])){
+        $waived = $_POST["waived"];
     }
 
-    else{
-        $_SESSION["DeliveryMode"] = "Normal";
-        if($hour < "12"){
-            $_SESSION["DeliveryTime"] = "9am - 12noon";
-            $_SESSION["DeliveryDate"] = date("Y-m-d", strtotime("+1 day"));
-        }
-
-        else if($hour >= "12" && $hour < 15 ){
-            $_SESSION["DeliveryTime"] = "12noon - 3pm";
-            $_SESSION["DeliveryDate"] = date("Y-m-d", strtotime("+1 day"));
-        }
-
-        //within 24 hours: even if order is placed late at night,
-        //it will be delivered at the latest timeslot the next day
-        else if($hour >= 15){
-            $_SESSION["DeliveryTime"] = "3pm - 6pm";
-            $_SESSION["DeliveryDate"] = date("Y-m-d", strtotime("+1 day"));
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_array()) {
+        $tax = round($subTotal*($row["TaxRate"]/100),2);
+        $total = round($subTotal*(1 + ($row["TaxRate"]/100)),2);
+        echo "<tr style='line-height: 3;'>";
+        echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: left; font-size: large; font-weight: normal; width: 72%'><strong style='color: grey;'>Subtotal (w/ GST)</strong></th>";
+        echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: right; font-size: large; font-weight: normal;'><strong id='subTotal' name='subTotal'>$$total</strong></th>";
+        echo "</tr>";
         }
     }
-
-    //Data to be sent to PayPal
-	$padata = '&CURRENCYCODE='.urlencode($PayPalCurrencyCode).
-    '&PAYMENTACTION=Sale'.
-    '&ALLOWNOTE=1'.
-    '&PAYMENTREQUEST_0_CURRENCYCODE='.urlencode($PayPalCurrencyCode).
-    '&PAYMENTREQUEST_0_AMT='.urlencode($_SESSION["SubTotal"] +
-                                       $_SESSION["Tax"] + 
-                                       $_SESSION["ShipCharge"]).
-    '&PAYMENTREQUEST_0_ITEMAMT='.urlencode($_SESSION["SubTotal"]). 
-    '&PAYMENTREQUEST_0_SHIPPINGAMT='.urlencode($_SESSION["ShipCharge"]). 
-    '&PAYMENTREQUEST_0_TAXAMT='.urlencode($_SESSION["Tax"]). 	
-    '&BRANDNAME='.urlencode("Delicious Donuts").
-    $paypal_data.				
-    '&RETURNURL='.urlencode($PayPalReturnURL ).
-    '&CANCELURL='.urlencode($PayPalCancelURL);
-
-    //We need to execute the "SetExpressCheckOut" method to obtain paypal token
-	$httpParsedResponseAr = PPHttpPost('SetExpressCheckout', $padata, $PayPalApiUsername, 
-    $PayPalApiPassword, $PayPalApiSignature, $PayPalMode);
-
-    //Respond according to message we receive from Paypal
-    if("SUCCESS" == strtoupper($httpParsedResponseAr["ACK"]) || 
-    "SUCCESSWITHWARNING" == strtoupper($httpParsedResponseAr["ACK"])) {					
-    if($PayPalMode=='sandbox')
-    $paypalmode = '.sandbox';
-    else
-    $paypalmode = '';
-
-    //Redirect user to PayPal store with Token received.
-    $paypalurl ='https://www'.$paypalmode. 
-    '.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token='.
-    $httpParsedResponseAr["TOKEN"].'';
-    header('Location: '.$paypalurl);
+     echo "<tr style='line-height: 3;'>";
+     if ($waived == "true"){
+        echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: left; font-size: large; font-weight: normal; width: 72%'><strong style='color: grey;'>Delivery Charge</strong></th>";
+        echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: right; font-size: large; font-weight: normal;'><strong id='deliveryValue'>waived</strong></th>";
     }
     else {
-        //Show error message
-        echo "<div style='color:red'><b>SetExpressCheckOut failed : </b>".
-            urldecode($httpParsedResponseAr["L_LONGMESSAGE0"])."</div>";
-        echo "<pre>".print_r($httpParsedResponseAr)."</pre>";
+        echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: left; font-size: large; font-weight: normal; width: 72%'><strong style='color: grey;'>Delivery Charge</strong></th>";
+        echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: right; font-size: large; font-weight: normal;'><strong id='deliveryValue'></strong></th>";
     }
-}
+     echo "</tr>";
+     echo"<tr style='border-bottom:1px solid black;'></tr>";
+     echo "<tr style='line-height: 3;'>";
+     echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: left; font-size: large; font-weight: normal; width: 72%'><strong>Total</strong></th>";
+     echo "<th style='display: table-cell; padding: 0.5em 0.5em 0 0; text-align: right; font-size: large; font-weight: normal;'><strong id='totalCost' name='totalCost'>$$total</strong></th>";
+     echo "</tr>";
+     echo "</tbody>
+     </table>
+     </div>";
 
-//Paypal redirects back to this page using ReturnURL, We should receive TOKEN and Payer ID
-if(isset($_GET["token"]) && isset($_GET["PayerID"])) 
-{	
-	//we will be using these two variables to execute the "DoExpressCheckoutPayment"
-	//Note: we haven't received any payment yet.
-	$token = $_GET["token"];
-	$playerid = $_GET["PayerID"];
-	$paypal_data = '';
-	
-	// Get all items from the shopping cart, concatenate to the variable $paypal_data
-	// $_SESSION['Items'] is an associative array
-	foreach($_SESSION['Items'] as $key=>$item) 
-	{
-		$paypal_data .= '&L_PAYMENTREQUEST_0_QTY'.$key.'='.urlencode($item["quantity"]);
-	  	$paypal_data .= '&L_PAYMENTREQUEST_0_AMT'.$key.'='.urlencode($item["price"]);
-	  	$paypal_data .= '&L_PAYMENTREQUEST_0_NAME'.$key.'='.urlencode($item["name"]);
-		$paypal_data .= '&L_PAYMENTREQUEST_0_NUMBER'.$key.'='.urlencode($item["productId"]);
-	}
-	
-	//Data to be sent to PayPal
-	$padata = '&TOKEN='.urlencode($token).
-			  '&PAYERID='.urlencode($playerid).
-			  '&PAYMENTREQUEST_0_PAYMENTACTION='.urlencode("SALE").
-			  $paypal_data.	
-			  '&PAYMENTREQUEST_0_ITEMAMT='.urlencode($_SESSION["SubTotal"]).
-              '&PAYMENTREQUEST_0_TAXAMT='.urlencode($_SESSION["Tax"]).
-              '&PAYMENTREQUEST_0_SHIPPINGAMT='.urlencode($_SESSION["ShipCharge"]).
-			  '&PAYMENTREQUEST_0_AMT='.urlencode($_SESSION["SubTotal"] + 
-			                                     $_SESSION["Tax"] + 
-								                 $_SESSION["ShipCharge"]).
-			  '&PAYMENTREQUEST_0_CURRENCYCODE='.urlencode($PayPalCurrencyCode);
-	
-	//We need to execute the "DoExpressCheckoutPayment" at this point 
-	//to receive payment from user.
-	$httpParsedResponseAr = PPHttpPost('DoExpressCheckoutPayment', $padata, 
-	                                   $PayPalApiUsername, $PayPalApiPassword, 
-									   $PayPalApiSignature, $PayPalMode);
-	
-	//Check if everything went ok..
-	if("SUCCESS" == strtoupper($httpParsedResponseAr["ACK"]) || 
-	   "SUCCESSWITHWARNING" == strtoupper($httpParsedResponseAr["ACK"])) 
-	{
-		// To Do 5 (DIY): Update stock inventory in product table 
-		//                after successful checkout
-        $qry = "SELECT * FROM shopcartitem WHERE ShopCartID = ?";
+    echo "
+        <div class='col-sm-6'>
+            <form method='post' action='checkoutProcess.php' class='form-container' style='float: left; width: 100%; margin-top: 6rem; display: flex; justify-content: flex-start; align-items: flex-start; flex-direction: column;'>
+            <h2 class='form-title' style='font-size: 36px; margin-bottom: 2.5rem; font-weight: 500; opacity: 0.8;'>Delivery Details</h2>
+            <div class='checkout-form' style='display: flex; justify-content: center; align-items: flex-start; flex-direction: column; width: 100%;'>
+                <div class='input-line' style='display: flex; justify-content: center; align-items: flex-start; margin-bottom: 2rem; width: 100%;'>
+                    <label for='name' style='font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Deliver To&nbsp;<abbr style='color: red;'>*</abbr>&emsp;&emsp;&emsp;&emsp;&emsp;</label>
+                    <input type='text' style='width: 100%; height: 40px; padding: 0 10px; background-color: #f2f2f2; border-radius: 5px; border: none; font-size: 18px;' name='ShipName' id='ShipName' placeholder='John Ecader' required>
+                </div>
+                <div class='input-line' style='display: flex; justify-content: center; align-items: flex-start; margin-bottom: 2rem; width: 100%;'>
+                    <label for='name' style='font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Recipient Mobile No&nbsp;<abbr style='color: red;'>*</abbr></label>
+                    <input type='text' style='width: 100%; height: 40px; padding: 0 10px; background-color: #f2f2f2; border-radius: 5px; border: none; font-size: 18px;' id='ShipPhone' name='ShipPhone' placeholder='(65) 1234 5678' required>
+                </div>
+                <div class='input-line' style='display: flex; justify-content: center; align-items: flex-start; margin-bottom: 2rem; width: 100%;'>
+                    <label for='name' style='font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Recipient Email&nbsp;<abbr style='color: red;'>*</abbr>&emsp;&emsp;&ensp;</label>
+                    <input type='text' style='width: 100%; height: 40px; padding: 0 10px; background-color: #f2f2f2; border-radius: 5px; border: none; font-size: 18px;' id='ShipEmail' name='ShipEmail' placeholder='' required>
+                </div>
+                <div class='input-line' style='display: flex; justify-content: center; align-items: flex-start; margin-bottom: 2rem; width: 100%;'>
+                    <label for='name' style='font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Message&emsp;&emsp;&emsp;&emsp;</label>
+                    <textarea style='width: 100%; height: 40px; padding: 0 10px; background-color: #f2f2f2; border-radius: 5px; border: none; font-size: 18px;' id='Message' name='Message' placeholder='Merry Christmas!'></textarea>
+                </div>
+                <div class='input-line' style='display: flex; justify-content: center; align-items: flex-start; margin-bottom: 2rem; width: 100%;'>";
 
-        $stmt = $conn->prepare($qry);
-
-        $stmt->bind_param("i", $_SESSION["Cart"]);
-        $stmt->execute();
-        $result=$stmt->get_result();
-
-        if($result->num_rows > 0){
-        while($row = $result->fetch_array()){
-            $qry2 = 'UPDATE Product Set Quantity = Quantity-? WHERE ProductID = ?';
-            $stmt2 = $conn->prepare($qry2);
-            $stmt2->bind_param("dd", $row["Quantity"], $row["ProductID"]);
-            $stmt2->execute();
-            $stmt2->close();
-        }
-        }
-		
-		// End of To Do 5
-	
-		// To Do 2: Update shopcart table, close the shopping cart (OrderPlaced=1)
-		$total = $_SESSION["SubTotal"] + $_SESSION["Tax"] + $_SESSION["ShipCharge"];
-		$qry = "UPDATE shopcart SET OrderPlaced=1, Quantity=?, SubTotal=?, ShipCharge=?, Tax=?, Total=? WHERE ShopCartID=?";
-		$stmt = $conn->prepare($qry);
-		// "i" - integer, "d" - double
-		$stmt->bind_param("iddddi", $_SESSION["NumCartItem"],
-						  $_SESSION["SubTotal"], $_SESSION["ShipCharge"],
-						  $_SESSION["Tax"], $total,
-						  $_SESSION["Cart"]);
-		$stmt->execute();
-		$stmt->close();
-		// End of To Do 2
-		
-		//We need to execute the "GetTransactionDetails" API Call at this point 
-		//to get customer details
-		$transactionID = urlencode(
-		                 $httpParsedResponseAr["PAYMENTINFO_0_TRANSACTIONID"]);
-		$nvpStr = "&TRANSACTIONID=".$transactionID;
-		$httpParsedResponseAr = PPHttpPost('GetTransactionDetails', $nvpStr, 
-		                                   $PayPalApiUsername, $PayPalApiPassword, 
-										   $PayPalApiSignature, $PayPalMode);
-
-		if("SUCCESS" == strtoupper($httpParsedResponseAr["ACK"]) || 
-		   "SUCCESSWITHWARNING" == strtoupper($httpParsedResponseAr["ACK"])) 
-		   {
-			//gennerate order entry and feed back orderID information
-			//You may have more information for the generated order entry 
-			//if you set those information in the PayPal test accounts.
-			
-			$ShipName = addslashes(urldecode($httpParsedResponseAr["SHIPTONAME"]));
-			
-			$ShipAddress = urldecode($httpParsedResponseAr["SHIPTOSTREET"]);
-			if (isset($httpParsedResponseAr["SHIPTOSTREET2"]))
-				$BillingAddress .= ' '.urldecode($httpParsedResponseAr["SHIPTOSTREET2"]);
-			if (isset($httpParsedResponseAr["SHIPTOCITY"]))
-			    $BillingAddress .= ' '.urldecode($httpParsedResponseAr["SHIPTOCITY"]);
-			if (isset($httpParsedResponseAr["SHIPTOSTATE"]))
-			    $ShipAddress .= ' '.urldecode($httpParsedResponseAr["SHIPTOSTATE"]);
-			$ShipAddress .= ' '.urldecode($httpParsedResponseAr["SHIPTOCOUNTRYNAME"]). 
-			                ' '.urldecode($httpParsedResponseAr["SHIPTOZIP"]);
-				
-			$ShipCountry = urldecode(
-			               $httpParsedResponseAr["SHIPTOCOUNTRYNAME"]);
-			
-			$ShipEmail = urldecode($httpParsedResponseAr["EMAIL"]);			
-			
-			// To Do 3: Insert an Order record with shipping information
-			//          Get the Order ID and save it in session variable.
-			$qry = "INSERT INTO orderdata (ShopCartID, ShipName, ShipAddress, ShipCountry,ShipPhone,
-												 ShipEmail, BillName, BillAddress, BillCountry, BillPhone, BillEmail,
-												  DeliveryDate, DeliveryTime, DeliveryMode, Message, DateOrdered) VALUE(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			$stmt = $conn->prepare($qry);
-			$stmt->bind_param("isssssssssssssss", $_SESSION["Cart"], $_SESSION["ShipName"], $ShipAddress, $ShipCountry, $_SESSION["ShipPhone"], $ShipEmail, $_SESSION["ShipName"], $_SESSION["BillAddress"], $_SESSION["BillCountry"], $_SESSION["BillPhone"], $_SESSION["BillEmail"], $_SESSION["DeliveryDate"], $_SESSION["DeliveryTime"], $_SESSION["DeliveryMode"], $_SESSION["Message"], $_SESSION["DeliverDate"]);
-			$stmt->execute();
-			$stmt->close();
-			$qry = "SELECT LAST_INSERT_ID() AS OrderID";
-			$result = $conn->query($qry);
-			$row = $result->fetch_array();
-			$_SESSION["OrderID"] = $row["OrderID"];
-			// End of To Do 3
-				
-			$conn->close();
-				  
-			// To Do 4A: Reset the "Number of Items in Cart" session variable to zero.
-			$_SESSION["NumCartItem"] = 0;
-	  		
-			// To Do 4B: Clear the session variable that contains Shopping Cart ID.
-			unset($_SESSION["Cart"]);
-			
-			// To Do 4C: Redirect shopper to the order confirmed page.
-			header("Location: orderConfirmed.php");
-			exit;
-		} 
-		else 
-		{
-		    echo "<div style='color:red'><b>GetTransactionDetails failed:</b>".
-			                urldecode($httpParsedResponseAr["L_LONGMESSAGE0"]).'</div>';
-			echo "<pre>".print_r($httpParsedResponseAr)."</pre>";
-			$conn->close();
-		}
-	}
-	else {
-		echo "<div style='color:red'><b>DoExpressCheckoutPayment failed : </b>".
-		                urldecode($httpParsedResponseAr["L_LONGMESSAGE0"]).'</div>';
-		echo "<pre>".print_r($httpParsedResponseAr)."</pre>";
-	}
+                if ($waived == "true"){
+                    echo" <label for='name' style='padding-right: 10%; font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Delivery Mode&nbsp;<abbr style='color: red;'>*</abbr>&emsp;&emsp;&emsp;&emsp;&emsp;</label>
+                    <input type='radio' onclick='check()' style='width: 10%; height: 20px; padding: 0 10px; background-color: #f2f2f2; border: none;' id='DeliveryMode' name='delivery' value='0'>
+                    <label for='name' value='normal' style='padding-right: 20%; font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Normal</label>
+                    <input type='radio' onclick='check()' value='5' style='width: 10%; height: 20px; padding: 0 10px; background-color: #f2f2f2; border: none;' id='DeliveryMode' name='delivery' value='5'>
+                    <label for='name' style='padding-right: 20%; font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Express</label>
+                    </div>";
+                }
+                else {
+                    echo" <label for='name' style='padding-right: 10%; font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Delivery Mode&nbsp;<abbr style='color: red;'>*</abbr>&emsp;&emsp;&emsp;&emsp;&emsp;</label>
+                    <input type='radio' onclick='check()' style='width: 10%; height: 20px; padding: 0 10px; background-color: #f2f2f2; border: none;' id='DeliveryMode' name='delivery' value='2' required>
+                    <label for='name' value='normal' style='padding-right: 20%; font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Normal</label>
+                    <input type='radio' onclick='check()' value='5' style='width: 10%; height: 20px; padding: 0 10px; background-color: #f2f2f2; border: none;' id='DeliveryMode' name='delivery' value='5' required>
+                    <label for='name' style='padding-right: 20%; font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Express</label>
+                    </div>";
+                }
+                echo "
+                <br/>
+                <br/>
+                <div class='input-line' style='display: flex; justify-content: center; align-items: flex-start; margin-bottom: 2rem; width: 100%;'>
+                    <label for='name' style='font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Billing Address&nbsp;<abbr style='color: red;'>*</abbr>&emsp;&nbsp;</label>
+                    <input type='text' style='width: 100%; height: 40px; padding: 0 10px; background-color: #f2f2f2; border-radius: 5px; border: none; font-size: 18px;' id='BillAddress' name='BillAddress' placeholder='' required>
+                </div>
+                <div class='input-line' style='display: flex; justify-content: center; align-items: flex-start; margin-bottom: 2rem; width: 100%;'>
+                    <label for='name' style='font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Billing Mobile No&nbsp;<abbr style='color: red;'>*</abbr></label>
+                    <input type='text' style='width: 100%; height: 40px; padding: 0 10px; background-color: #f2f2f2; border-radius: 5px; border: none; font-size: 18px;' id='BillPhone' name='BillPhone' placeholder='(65) 1234 5678' required>
+                </div>
+                <div class='input-line' style='display: flex; justify-content: center; align-items: flex-start; margin-bottom: 2rem; width: 100%;'>
+                    <label for='name' style='font-size: 16px; color: grey; margin-bottom: 0.5rem;'>Billing Email&nbsp;<abbr style='color: red;'>*</abbr>&emsp;&emsp;&ensp;</label>
+                    <input type='text' style='width: 100%; height: 40px; padding: 0 10px; background-color: #f2f2f2; border-radius: 5px; border: none; font-size: 18px;' id='BillEmail' name='BillEmail' placeholder='' required>
+                </div>
+                <input type='hidden' name='Tax' id='Tax' value='$tax'>
+                <input type='hidden' name='finalTotal' id='finalTotal' value=''>
+                <div class='input-container' style='display: flex; justify-content: right; align-items: center; width: 100%;'>
+                <!--<button type='submit' style='float: right; background-color: rgb(0, 132, 255); color: white; font-weight: 500; font-size: 18px; height: 50px; padding: 0 30px; border: none; border-radius: 5px; cursor: pointer;'>Continue</button>-->
+                <input type='image' style='float:right;' src='https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif'>
+            </div>
+            </form>
+        </div>
+        </div>
+        </div>";
 }
 ?>
+<script>
+    function check() {
+        if (document.querySelector('input[name="delivery"]:checked').value == "0"){
+            document.getElementById("deliveryValue").innerHTML = "waived";
+        }
+        else {
+            document.getElementById("deliveryValue").innerHTML = '$' + document.querySelector('input[name="delivery"]:checked').value;
+        }
+        document.getElementById("totalCost").innerHTML = '$' + (Number.parseFloat(document.getElementById("subTotal").innerText.substr(1),10) + Number.parseFloat(document.querySelector('input[name="delivery"]:checked').value,10)).toFixed(2).toString();
+        document.getElementById("FinalTotal").innerHTML = '$' + (Number.parseFloat(document.getElementById("subTotal").innerText.substr(1),10) + Number.parseFloat(document.querySelector('input[name="delivery"]:checked').value,10)).toFixed(2).toString();
+    };
+</script>
 <?php
 include("footer.php"); // Include the Page Layout footer
 ?>
