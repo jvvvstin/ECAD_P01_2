@@ -4,8 +4,8 @@ include("header.php"); // Include the Page Layout header
 include_once("myPayPal.php");
 include_once("mysql_conn.php"); 
 //testing
-$_SESSION["ShopperID"] = 1;
-$_SESSION["Cart"] = 1;
+//$_SESSION["ShopperID"] = 1;
+//$_SESSION["Cart"] = 1;
 
 if($_POST) //Post Data received from checkout page
 {
@@ -32,9 +32,13 @@ if($_POST) //Post Data received from checkout page
                     if ($row["Quantity"] > $qty){
                         $a = $row["ProductID"];
                         $b = $row["Name"];
-                        echo "Product $a : $b is out of stock!<br />";
-                        echo "Please return to shopping cart to amend your purchase. <br />";
-                        echo $row["Quantity"];
+                        $c = $row["Quantity"];
+                        echo "<div style='text-align: center; padding-top: 5%;'>";
+                        echo "<h3>Product $a : $b is out of stock!</h3><br />";
+                        echo "<h4>Requested Quantity: $c</h4>";
+                        echo "<h4>Please return to shopping cart to amend your purchase.</h4> <br />";
+                        echo "<h4><a href='shoppingCart.php'>Proceed Back to Shopping Cart</a></h4>";
+                        echo "</div>";
                         include("footer.php");
                         exit;
                     }
@@ -68,6 +72,7 @@ if($_POST) //Post Data received from checkout page
     $_SESSION["BillPhone"] = $_POST["BillPhone"];
     $_SESSION["BillEmail"] = $_POST["BillEmail"];
 
+    $hour = Date("H");
     //get delivery date & timeslot
     if ($deliveryMode == "5"){
         $_SESSION["DeliveryMode"] = "Express";
